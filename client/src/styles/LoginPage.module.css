@@ -1,0 +1,23 @@
+.loginContainer {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.loginContainer h2 {
+    margin-bottom: 20px;
+}
+
+.loginContainer form {
+    display: flex;
+    flex-direction: column;
+}
+
+.loginContainer input,
+.loginContainer select,
+.loginContainer button {
+    margin-bottom: 15px;
+    padding: 10px;
+}
