@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // Pass io to the routes
-app.use("/api/queue", queueRoutes(io));
+// app.use("/api/queue", queueRoutes(io));
 
 mongoose
   .connect(process.env.MONGO_URI)
