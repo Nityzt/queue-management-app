@@ -1,27 +1,87 @@
-import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:5000');
+import React, { useEffect, useState } from "react";
+import "./Queue.css";
 
 function Queue() {
-    const [queue, setQueue] = useState([]);
+  const [queueItems, setQueueItems] = useState([]);
+  const [newName, setNewName] = useState("");
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        socket.on('queueUpdated', (data) => {
-            setQueue(data);
-        });
+  // Fetch existing queue items
+  useEffect(() => {
+    fetch("http://localhost:5001/api/queue")
+      .then((res) => res.json())
+      .then((data) => {
+        setQueueItems(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching queue:", err);
+        setLoading(false);
+      });
+  }, []);
 
-        return () => socket.disconnect();
-    }, []);
+  // Function to handle adding a new item
+  const handleAdd = () => {
+    if (!newName.trim()) return;
 
-    return (
-        <div>
-            <h1>Current Queue</h1>
-            {queue.map((item, index) => (
-                <p key={index}>{item.name}</p>
-            ))}
-        </div>
-    );
+    fetch("http://localhost:5001/api/queue", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name: newName })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setQueueItems([...queueItems, data]);
+        setNewName("");
+      })
+      .catch((err) => {
+        console.error("Error adding to queue:", err);
+      });
+  };
+
+  // Function to handle deleting an item
+  const handleDelete = (id) => {
+    fetch(`http://localhost:5001/api/queue/${id}`, {
+      method: "DELETE"
+    })
+      .then(() => {
+        setQueueItems(queueItems.filter((item) => item._id !== id));
+      })
+      .catch((err) => {
+        console.error("Error deleting from queue:", err);
+      });
+  };
+
+  return (
+    <div className="queue-container">
+      <h1>Queue Management</h1>
+      {loading ? (
+        <p>Loading...</p>
+      ) : queueItems.length === 0 ? (
+        <p>No items in the queue.</p>
+      ) : (
+        <ul className="queue-list">
+          {queueItems.map((item) => (
+            <li key={item._id} className="queue-item">
+              <span>{item.name}</span>
+              <button onClick={() => handleDelete(item._id)}>Remove</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="queue-input">
+        <input
+          type="text"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Enter name"
+        />
+        <button onClick={handleAdd}>Add</button>
+      </div>
+    </div>
+  );
 }
 
 export default Queue;

@@ -4,8 +4,8 @@ import cors from 'cors';
 import { config } from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-
-
+import dotenv from 'dotenv';
+dotenv.config();
 import queueRoutes from './routes/queueRoutes.js';
 
 config();
