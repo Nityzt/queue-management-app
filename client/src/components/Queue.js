@@ -8,7 +8,7 @@ function Queue() {
 
   // Fetch existing queue items
   useEffect(() => {
-    fetch("http://localhost:5001/api/queue")
+    fetch("https://queue-management-app.onrender.com/api/queue")
       .then((res) => res.json())
       .then((data) => {
         setQueueItems(data);
@@ -24,7 +24,7 @@ function Queue() {
   const handleAdd = () => {
     if (!newName.trim()) return;
 
-    fetch("http://localhost:5001/api/queue", {
+    fetch("https://queue-management-app.onrender.com/api/queue", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -43,7 +43,7 @@ function Queue() {
 
   // Function to handle deleting an item
   const handleDelete = (id) => {
-    fetch(`http://localhost:5001/api/queue/${id}`, {
+    fetch(`https://queue-management-app.onrender.com/api/queue/${id}`, {
       method: "DELETE"
     })
       .then(() => {
