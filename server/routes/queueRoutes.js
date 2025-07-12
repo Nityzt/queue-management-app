@@ -1,33 +1,45 @@
-import express from 'express';
-import QueueEntry from '../models/QueueEntry.js';
+import express from "express";
+import QueueEntry from "../models/QueueEntry.js";
 
-const router = express.Router();
+export default (io) => {
+  const router = express.Router();
 
-// GET all queue items
-router.get('/', async (req, res) => {
-  try {
-    const items = await QueueEntry.find();
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+  // GET all entries
+  router.get("/", async (req, res) => {
+    const entries = await QueueEntry.find().lean();
+    const cleanEntries = entries.map(e => ({
+      _id: e._id,
+      name: e.name,
+      studentId: e.studentId
+    }));
+    res.json(cleanEntries);
+  });
 
-// POST a new queue item
-router.post('/', async (req, res) => {
-  try {
-    const { name } = req.body;
-    const newItem = new QueueEntry({ name });
-    await newItem.save();
-    res.json(newItem);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+  // POST new entry
+  router.post("/", async (req, res) => {
+    const { name, studentId } = req.body;
+    if (!name || !studentId) {
+      return res.status(400).json({ error: "Name and Student ID required" });
+    }
 
-router.delete("/:id", async (req, res) => {
-  await QueueEntry.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted successfully" });
-});
+    const newEntry = await QueueEntry.create({ name, studentId });
 
-export default router;
+    const responseObj = {
+      _id: newEntry._id,
+      name: newEntry.name,
+      studentId: newEntry.studentId
+    };
+
+    io.emit("queue-added", responseObj);
+    res.status(201).json(responseObj);
+  });
+
+  // DELETE entry
+  router.delete("/:id", async (req, res) => {
+    await QueueEntry.findByIdAndDelete(req.params.id);
+    io.emit("queue-deleted", req.params.id);
+    res.json({ message: "Deleted" });
+  });
+
+  return router;
+};
